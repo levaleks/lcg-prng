@@ -1,0 +1,36 @@
+# Handle line endings automatically for files detected as text
+* text=auto
+
+# Declare files that will always have LF line endings on checkout.
+*.js text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+
+# These files are binary and should be left untouched
+# (binary is a macro for -text -diff)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.mov binary
+*.mp4 binary
+*.mp3 binary
+*.flv binary
+*.fla binary
+*.swf binary
+*.gz binary
+*.zip binary
+*.7z binary
+*.ttf binary
+*.eot binary
+*.woff binary
+*.woff2 binary
+*.pyc binary
+*.pdf binary
+
+# This tricks the diff viewers in every system to think that the file is a binary file that should be collapsed.
+# You can still uncollapse the file if you need to verify the changes.
+package-lock.json -diff
+yarn.lock -diff
