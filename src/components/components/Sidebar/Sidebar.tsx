@@ -24,6 +24,7 @@ export const Sidebar: React.FC = observer(() => {
             increment: lcgStore.defaults.increment,
             modulus: lcgStore.defaults.modulus,
             quantity: lcgStore.defaults.quantity,
+            thresholds: lcgStore.defaults.thresholds,
         },
         mode: 'onChange',
     });
@@ -170,6 +171,32 @@ export const Sidebar: React.FC = observer(() => {
                             type="number"
                             error={!!errors?.quantity}
                             helperText={errors?.quantity?.message}
+                            {...field}
+                        />
+                    )}
+                />
+                <Controller
+                    name="thresholds"
+                    control={control}
+                    rules={{
+                        validate: (thresholds: unknown): boolean | string => {
+                            if (thresholds === '') {
+                                return 'Thresholds is required';
+                            }
+
+                            return (
+                                (Number.isInteger(Number(thresholds)) && Number(thresholds) > 0) ||
+                                'Thresholds must be a positive integer'
+                            );
+                        },
+                    }}
+                    render={({ field }): React.ReactElement => (
+                        <TextField
+                            label="Thresholds"
+                            variant="standard"
+                            type="number"
+                            error={!!errors?.thresholds}
+                            helperText={errors?.thresholds?.message}
                             {...field}
                         />
                     )}

@@ -8,6 +8,7 @@ export interface Parameters {
     increment: number;
     modulus: number;
     quantity: number;
+    thresholds: number;
 }
 
 export type Output = {
@@ -18,6 +19,7 @@ export type Output = {
     increment: number;
     modulus: number;
     quantity: number;
+    thresholds: number;
 } | null;
 
 export class LCGStore {
@@ -42,11 +44,12 @@ export class LCGStore {
         increment: 1013904223,
         modulus: 2 ** 32,
         quantity: 10000,
+        thresholds: 42,
     });
 
     output: Output = null;
 
-    generate({ quantity, ...lcgParams }: Parameters): void {
+    generate({ quantity, thresholds, ...lcgParams }: Parameters): void {
         const lcg = new LCG(lcgParams);
 
         const t0 = performance.now();
@@ -62,6 +65,7 @@ export class LCGStore {
             values,
             ...lcgParams,
             quantity,
+            thresholds,
         };
     }
 

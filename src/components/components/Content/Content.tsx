@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { Paper, Stack, Typography } from '@mui/material';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import { bin } from 'd3-array';
-import { CartesianGrid, Legend, Tooltip, XAxis, YAxis, BarChart, ResponsiveContainer, Bar } from 'recharts';
+import { CartesianGrid, Legend, Tooltip, XAxis, YAxis, ComposedChart, ResponsiveContainer, Bar, Line } from 'recharts';
 import { Container } from '../components/Container';
 import { useNonNullableContext } from '../../../utils/UseNonNullableContext';
 import { LCGStoreContext } from '../../LCGStore';
@@ -30,7 +30,7 @@ export const Content: React.FC = observer(() => {
 
         const getBins = bin()
             .domain([0, lcgStore.output.modulus - 1])
-            .thresholds(10);
+            .thresholds(lcgStore.output.thresholds);
 
         setChartData(
             getBins(lcgStore.output.values).map(({ x0, x1, length }) => ({
@@ -61,7 +61,7 @@ export const Content: React.FC = observer(() => {
                     Frequency chart
                 </Typography>
                 <ResponsiveContainer width="100%" height="50%">
-                    <BarChart data={chartData} margin={{ top: 16 }}>
+                    <ComposedChart data={chartData} margin={{ top: 16 }}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="label" />
                         <YAxis dataKey="size" />
@@ -94,13 +94,25 @@ export const Content: React.FC = observer(() => {
                         <Bar
                             dataKey="size"
                             fill="lightBlue"
-                            label={({ x, y, value }): React.ReactElement => (
-                                <text x={x + 20} y={y} dy={-4} fontSize="16" fill="lightBlue" textAnchor="middle">
-                                    {formatNumber(value)}
-                                </text>
-                            )}
+                            label={
+                                chartData.length > 10
+                                    ? undefined
+                                    : ({ x, y, value }): React.ReactElement => (
+                                          <text
+                                              x={x + 20}
+                                              y={y}
+                                              dy={-4}
+                                              fontSize="16"
+                                              fill="lightBlue"
+                                              textAnchor="middle"
+                                          >
+                                              {formatNumber(value)}
+                                          </text>
+                                      )
+                            }
                         />
-                    </BarChart>
+                        <Line type="monotone" dataKey="size" stroke="#ff5252" />
+                    </ComposedChart>
                 </ResponsiveContainer>
                 <Typography variant="overline" mt="auto" ml="auto">
                     Generated in: {lcgStore.output.tookMs.toFixed(2)} ms
