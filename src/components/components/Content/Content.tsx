@@ -1,50 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Paper, Stack, Typography } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 import BarChartIcon from '@mui/icons-material/BarChart';
-import { bin } from 'd3-array';
-import { CartesianGrid, Legend, Tooltip, XAxis, YAxis, ComposedChart, ResponsiveContainer, Bar, Line } from 'recharts';
 import { Container } from '../components/Container';
 import { useNonNullableContext } from '../../../utils/UseNonNullableContext';
 import { LCGStoreContext } from '../../LCGStore';
-import { formatNumber } from './utils/formatNumber';
+import { FrequencyChart } from './components/FrequencyChart';
+import { ProbabilityDensityChart } from './components/ProbabilityDensityChart';
 
 export const Content: React.FC = observer(() => {
     const lcgStore = useNonNullableContext(LCGStoreContext);
-    const [chartData, setChartData] = useState<
-        | {
-              size: number;
-              label: string;
-              x0: number | undefined;
-              x1: number | undefined;
-          }[]
-        | null
-    >(null);
 
-    useEffect(() => {
-        if (!lcgStore.output) {
-            setChartData(null);
-
-            return;
-        }
-
-        const getBins = bin()
-            .domain([0, lcgStore.output.modulus - 1])
-            .thresholds(lcgStore.output.thresholds);
-
-        setChartData(
-            getBins(lcgStore.output.values).map(({ x0, x1, length }) => ({
-                size: length,
-                label: `${typeof x0 === 'number' ? formatNumber(x0) : 'n/a'}-${
-                    typeof x1 === 'number' ? formatNumber(x1) : 'n/a'
-                }`,
-                x0,
-                x1,
-            })),
-        );
-    }, [lcgStore.output]);
-
-    if (!lcgStore.output || !chartData) {
+    if (!lcgStore.output) {
         return (
             <Container>
                 <Stack height="100%" justifyContent="center" alignItems="center" fontSize="64px">
@@ -57,63 +24,25 @@ export const Content: React.FC = observer(() => {
     return (
         <Container>
             <Stack height="100%">
-                <Typography variant="subtitle1" mb={3}>
-                    Frequency chart
-                </Typography>
-                <ResponsiveContainer width="100%" height="50%">
-                    <ComposedChart data={chartData} margin={{ top: 16 }}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="label" />
-                        <YAxis dataKey="size" />
-                        <Tooltip
-                            cursor={{ fill: '#e1f5fe50' }}
-                            content={({ active, payload }): React.ReactNode => {
-                                if (!active || !payload?.length) {
-                                    return null;
-                                }
-
-                                return (
-                                    <Paper elevation={2}>
-                                        <Stack padding={1}>
-                                            <Typography variant="caption">
-                                                <strong>Size:</strong> {payload[0]?.payload?.size} numbers
-                                            </Typography>
-                                            <Typography variant="caption">
-                                                <strong>Bin lowest: </strong>
-                                                {payload[0]?.payload?.x0}
-                                            </Typography>
-                                            <Typography variant="caption">
-                                                <strong>Bin highest:</strong> {payload[0]?.payload?.x1}
-                                            </Typography>
-                                        </Stack>
-                                    </Paper>
-                                );
-                            }}
-                        />
-                        <Legend />
-                        <Bar
-                            dataKey="size"
-                            fill="lightBlue"
-                            label={
-                                chartData.length > 10
-                                    ? undefined
-                                    : ({ x, y, value }): React.ReactElement => (
-                                          <text
-                                              x={x + 20}
-                                              y={y}
-                                              dy={-4}
-                                              fontSize="16"
-                                              fill="lightBlue"
-                                              textAnchor="middle"
-                                          >
-                                              {formatNumber(value)}
-                                          </text>
-                                      )
-                            }
-                        />
-                        <Line type="monotone" dataKey="size" stroke="#ff5252" />
-                    </ComposedChart>
-                </ResponsiveContainer>
+                <FrequencyChart />
+                <ProbabilityDensityChart />
+                <Stack gap={1}>
+                    <Typography variant="subtitle1">Chi-square goodness-of-fit test</Typography>
+                    <Typography variant="body2">
+                        Null hypothesis: population probabilities are equal to those in p
+                    </Typography>
+                    <Typography variant="body2" component="ul">
+                        <li>pValue: {lcgStore.output.gofResults.pValue}</li>
+                        <li>statistic: {lcgStore.output.gofResults.statistic}</li>
+                        <li>degrees of freedom: {lcgStore.output.gofResults.df}</li>
+                    </Typography>
+                    <Typography variant="body2">
+                        Test Decision:{' '}
+                        {lcgStore.output.gofResults.rejected
+                            ? 'Reject null in favor of alternative at 5% significance level'
+                            : 'Fail to reject null in favor of alternative at 5% significance level'}
+                    </Typography>
+                </Stack>
                 <Typography variant="overline" mt="auto" ml="auto">
                     Generated in: {lcgStore.output.tookMs.toFixed(2)} ms
                 </Typography>

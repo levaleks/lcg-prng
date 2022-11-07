@@ -1,6 +1,7 @@
 import { createContext } from 'react';
 import { makeAutoObservable, observable } from 'mobx';
 import { LCG } from '../core/LCG';
+import { CalculateStats, calculateStats } from '../core/calculateStats';
 
 export interface Parameters {
     seed: number;
@@ -20,6 +21,9 @@ export type Output = {
     modulus: number;
     quantity: number;
     thresholds: number;
+    bins: CalculateStats['bins'];
+    gofResults: CalculateStats['gofResults'];
+    pdfResults: CalculateStats['pdfResults'];
 } | null;
 
 export class LCGStore {
@@ -49,8 +53,8 @@ export class LCGStore {
 
     output: Output = null;
 
-    generate({ quantity, thresholds, ...lcgParams }: Parameters): void {
-        const lcg = new LCG(lcgParams);
+    generate({ quantity, thresholds, ...lcgOptions }: Parameters): void {
+        const lcg = new LCG(lcgOptions);
 
         const t0 = performance.now();
 
@@ -60,12 +64,21 @@ export class LCGStore {
 
         const tookMs = t1 - t0;
 
+        const { bins, gofResults, pdfResults } = calculateStats({
+            values,
+            thresholds,
+            domain: { min: 0, max: lcgOptions.modulus - 1 },
+        });
+
         this.output = {
             tookMs,
             values,
-            ...lcgParams,
+            bins,
+            gofResults,
+            pdfResults,
             quantity,
             thresholds,
+            ...lcgOptions,
         };
     }
 

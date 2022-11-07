@@ -10,6 +10,8 @@
         "@fontsource/roboto": "^4.5.7",
         "@mui/icons-material": "^5.8.4",
         "@mui/material": "^5.9.2",
+        "@stdlib/stats-base-dists-uniform-pdf": "^0.0.8",
+        "@stdlib/stats-chi2gof": "^0.0.8",
         "@types/d3-array": "^3.0.3",
         "@types/d3-format": "^3.0.1",
         "@types/lodash-es": "^4.17.6",
